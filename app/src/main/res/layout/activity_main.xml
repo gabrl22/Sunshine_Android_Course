@@ -12,7 +12,7 @@
     tools:context="com.example.gabriel.app.sunshine.MainActivity">
 
     <fragment
-        android:name="com.example.gabriel.app.sunshine.MainFragment"
+        android:name="com.example.gabriel.app.sunshine.ForecastFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:layout="@layout/fragment_main"/>
