@@ -1,6 +1,7 @@
 package com.example.gabriel.app.sunshine;
 
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,8 +15,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -70,9 +74,17 @@ public class ForecastFragment extends Fragment {
 
         adapter  = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, arrayList );
         listView.setAdapter(adapter);
-
-
-
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long l) {
+//                String forecast = (String) adapter.getItem(position);
+                String forecats = (String) parent.getItemAtPosition(position);
+//                Toast.makeText(getActivity(), forecats, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getActivity(), DetailActivity.class);
+                intent.putExtra("FORECAST", forecats);
+                startActivity(intent);
+            }
+        });
 
 
         return rootview;
@@ -92,6 +104,9 @@ public class ForecastFragment extends Fragment {
             case R.id.action_refresh:
                 new FetchWeatherTask().execute("94043");
                 return true;
+            case R.id.settings:
+                Intent intent = new Intent(getActivity(),SettingsActivity.class);
+                startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
