@@ -3,6 +3,7 @@ package com.example.gabriel.app.sunshine;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -260,8 +261,23 @@ public class ForecastFragment extends Fragment {
      */
     private String formatHighLows(double high, double low) {
         // For presentation, assume the user doesn't care about tenths of a degree.
-        long roundedHigh = Math.round(high);
-        long roundedLow = Math.round(low);
+        long roundedHigh;
+        long roundedLow;
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String tempUnit = sharedPreferences.getString(getString(R.string.pref_temp_key),"metric");
+
+        Resources res = getResources();
+        String[] units = res.getStringArray(R.array.pref_temp_values);
+
+        if(tempUnit.equalsIgnoreCase(units[1])){
+            roundedHigh = Math.round( ((9/5)*high) + 32);
+            roundedLow = Math.round( ((9/5)*low) + 32);
+        }
+        else{
+            roundedHigh = Math.round(high);
+            roundedLow = Math.round(low);
+        }
 
         String highLowStr = roundedHigh + "/" + roundedLow;
         return highLowStr;
