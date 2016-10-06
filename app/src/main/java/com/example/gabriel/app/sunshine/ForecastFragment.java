@@ -2,9 +2,11 @@ package com.example.gabriel.app.sunshine;
 
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
@@ -44,6 +46,7 @@ public class ForecastFragment extends Fragment {
     private final String apiKey = "560e75dcb93bfae3fdee566ea4782578";
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
     ArrayAdapter adapter;
+    private String location = "";
 
 
     public ForecastFragment() {
@@ -54,6 +57,21 @@ public class ForecastFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        getLocationFromPreferences();
+    }
+    private void getLocationFromPreferences(){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        location = sharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+    }
+    private void updateWeatherData(){
+        getLocationFromPreferences();
+        new FetchWeatherTask().execute(location);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeatherData();
     }
 
     @Override
@@ -64,15 +82,8 @@ public class ForecastFragment extends Fragment {
 
         ListView listView = (ListView)rootview.findViewById(R.id.listview);
 
-        ArrayList<String> arrayList = new ArrayList<>();
-        arrayList.add("Gabriel");
-        arrayList.add("Abdul");
-        arrayList.add("Luis");
-        arrayList.add("Tania");
-        arrayList.add("Kike");
-        arrayList.add("William");
 
-        adapter  = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, arrayList );
+        adapter  = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -102,7 +113,7 @@ public class ForecastFragment extends Fragment {
 
         switch(item.getItemId()){
             case R.id.action_refresh:
-                new FetchWeatherTask().execute("94043");
+                updateWeatherData();
                 return true;
             case R.id.settings:
                 Intent intent = new Intent(getActivity(),SettingsActivity.class);
@@ -166,7 +177,7 @@ public class ForecastFragment extends Fragment {
                     // http://openweathermap.org/API#forecast
                     URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7" + "&appid="+apiKey);
                     URL url2 = new URL(uriBuilder.build().toString());
-                    Log.v(LOG_TAG, "BUILT URI" + url2);
+
 
                     // Create the request to OpenWeatherMap, and open the connection
                     urlConnection = (HttpURLConnection) url2.openConnection();
