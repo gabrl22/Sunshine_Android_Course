@@ -4,6 +4,7 @@ package com.example.gabriel.app.sunshine;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -14,10 +15,10 @@ import android.widget.TextView;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PreferenceFragment extends android.preference.PreferenceFragment implements Preference.OnPreferenceChangeListener {
+public class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
 
 
-    public PreferenceFragment() {
+    public SettingsFragment() {
         // Required empty public constructor
     }
 
@@ -28,6 +29,12 @@ public class PreferenceFragment extends android.preference.PreferenceFragment im
 
         addPreferencesFromResource(R.xml.pref_general);
     }
+
+//    @Override
+//    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+//
+//        return inflater.inflate(R.layout.fragment_settings, container, false);
+//    }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
