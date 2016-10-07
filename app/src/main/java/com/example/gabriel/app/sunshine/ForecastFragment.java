@@ -48,6 +48,7 @@ public class ForecastFragment extends Fragment {
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
     ArrayAdapter adapter;
     private String location = "";
+    SharedPreferences mSharedPreferences;
 
 
     public ForecastFragment() {
@@ -58,16 +59,10 @@ public class ForecastFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         getLocationFromPreferences();
     }
-    private void getLocationFromPreferences(){
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        location = sharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
-    }
-    private void updateWeatherData(){
-        getLocationFromPreferences();
-        new FetchWeatherTask().execute(location);
-    }
+
 
     @Override
     public void onStart() {
@@ -81,10 +76,10 @@ public class ForecastFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootview = inflater.inflate(R.layout.fragment_main, container, false);
 
-        ListView listView = (ListView)rootview.findViewById(R.id.listview);
+        ListView listView = (ListView) rootview.findViewById(R.id.listview);
 
 
-        adapter  = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
+        adapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -102,29 +97,58 @@ public class ForecastFragment extends Fragment {
         return rootview;
     }
 
+    private void getLocationFromPreferences() {
+        location = mSharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+    }
+
+    private void updateWeatherData() {
+        getLocationFromPreferences();
+        new FetchWeatherTask().execute(location);
+    }
+
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 
         super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.foreacastfragment,menu);
+        inflater.inflate(R.menu.foreacastfragment, menu);
+    }
+
+    private void openPreferredLocation() {
+        //Se construye la URI para pasarlo al intent
+        String location = mSharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_key));
+        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon()
+                .appendQueryParameter("q", location)
+                .build();
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW);
+        mapIntent.setData(geoLocation);
+
+        if (mapIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            Toast.makeText(getActivity(), "There's no app to open the map", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_refresh:
                 updateWeatherData();
                 return true;
             case R.id.settings:
-                Intent intent = new Intent(getActivity(),SettingsActivity.class);
+                Intent intent = new Intent(getActivity(), SettingsActivity.class);
                 startActivity(intent);
+                return true;
+            case R.id.open_map:
+                openPreferredLocation();
+
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, String[]>{
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
 
         private final String POSTAL_CODE_PARAM = "q";
@@ -134,10 +158,10 @@ public class ForecastFragment extends Fragment {
 
         @Override
         protected void onPostExecute(String[] strings) {
-            if(strings !=null){
+            if (strings != null) {
                 adapter.clear();
 
-                for(String weather: strings){
+                for (String weather : strings) {
                     adapter.add(weather);
                 }
             }
@@ -147,67 +171,67 @@ public class ForecastFragment extends Fragment {
         protected String[] doInBackground(String... params) {
             String[] data = null;
 
-            if(params.length == 0){
+            if (params.length == 0) {
                 return null;
             }
 
-                // These two need to be declared outside the try/catch
+            // These two need to be declared outside the try/catch
 // so that they can be closed in the finally block.
-                Uri.Builder uriBuilder = new Uri.Builder();
-                uriBuilder.scheme("http");
-                uriBuilder.authority("api.openweathermap.org");
-                uriBuilder.appendPath("data");
-                uriBuilder.appendPath("2.5");
-                uriBuilder.appendPath("forecast");
-                uriBuilder.appendPath("daily");
-                uriBuilder.appendQueryParameter(POSTAL_CODE_PARAM, params[0]);
-                uriBuilder.appendQueryParameter(APPID_PARAMS, apiKey);
-                uriBuilder.appendQueryParameter(UNITS_PARAM, "metric");
-                uriBuilder.appendQueryParameter(DAYS_PARAM, "7");
+            Uri.Builder uriBuilder = new Uri.Builder();
+            uriBuilder.scheme("http");
+            uriBuilder.authority("api.openweathermap.org");
+            uriBuilder.appendPath("data");
+            uriBuilder.appendPath("2.5");
+            uriBuilder.appendPath("forecast");
+            uriBuilder.appendPath("daily");
+            uriBuilder.appendQueryParameter(POSTAL_CODE_PARAM, params[0]);
+            uriBuilder.appendQueryParameter(APPID_PARAMS, apiKey);
+            uriBuilder.appendQueryParameter(UNITS_PARAM, "metric");
+            uriBuilder.appendQueryParameter(DAYS_PARAM, "7");
 
 
-                HttpURLConnection urlConnection = null;
-                BufferedReader reader = null;
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
 
 // Will contain the raw JSON response as a string.
-                String forecastJsonStr = null;
+            String forecastJsonStr = null;
 
-                try {
-                    // Construct the URL for the OpenWeatherMap query
-                    // Possible parameters are available at OWM's forecast API page, at
-                    // http://openweathermap.org/API#forecast
-                    URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7" + "&appid="+apiKey);
-                    URL url2 = new URL(uriBuilder.build().toString());
+            try {
+                // Construct the URL for the OpenWeatherMap query
+                // Possible parameters are available at OWM's forecast API page, at
+                // http://openweathermap.org/API#forecast
+                URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7" + "&appid=" + apiKey);
+                URL url2 = new URL(uriBuilder.build().toString());
 
 
-                    // Create the request to OpenWeatherMap, and open the connection
-                    urlConnection = (HttpURLConnection) url2.openConnection();
-                    urlConnection.setRequestMethod("GET");
-                    urlConnection.connect();
+                // Create the request to OpenWeatherMap, and open the connection
+                urlConnection = (HttpURLConnection) url2.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.connect();
 
-                    // Read the input stream into a String
-                    InputStream inputStream = urlConnection.getInputStream();
-                    StringBuffer buffer = new StringBuffer();
-                    if (inputStream == null) {
-                        // Nothing to do.
-                        forecastJsonStr = null;
-                    }
-                    reader = new BufferedReader(new InputStreamReader(inputStream));
+                // Read the input stream into a String
+                InputStream inputStream = urlConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    // Nothing to do.
+                    forecastJsonStr = null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
 
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                        // But it does make debugging a *lot* easier if you print out the completed
-                        // buffer for debugging.
-                        buffer.append(line + "\n");
-                    }
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    buffer.append(line + "\n");
+                }
 
-                    if (buffer.length() == 0) {
-                        // Stream was empty.  No point in parsing.
-                        forecastJsonStr = null;
-                    }
-                    forecastJsonStr = buffer.toString();
-                    data = getWeatherDataFromJson(forecastJsonStr,7);
+                if (buffer.length() == 0) {
+                    // Stream was empty.  No point in parsing.
+                    forecastJsonStr = null;
+                }
+                forecastJsonStr = buffer.toString();
+                data = getWeatherDataFromJson(forecastJsonStr, 7);
 //                    JSONObject jsonWeather = new JSONObject(forecastJsonStr);
 //                    JSONArray list = jsonWeather.getJSONArray("list");
 //                    JSONObject oneDay = list.getJSONObject(0);
@@ -215,27 +239,26 @@ public class ForecastFragment extends Fragment {
 //                    double maxTemp = temp.getDouble("max");
 //                    Log.i(LOG_TAG, "MAX TEMP" + maxTemp);
 
-                    Log.i(LOG_TAG, data[0]);
-                } catch (IOException e) {
-                    Log.e(LOG_TAG, "Error ", e);
-                    // If the code didn't successfully get the weather data, there's no point in attempting
-                    // to parse it.
-                    forecastJsonStr = null;
+                Log.i(LOG_TAG, data[0]);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error ", e);
+                // If the code didn't successfully get the weather data, there's no point in attempting
+                // to parse it.
+                forecastJsonStr = null;
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, "Error parsing json");
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
                 }
-                catch (JSONException e){
-                    Log.e(LOG_TAG, "Error parsing json");
-                }finally{
-                    if (urlConnection != null) {
-                        urlConnection.disconnect();
-                    }
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (final IOException e) {
-                            Log.e(LOG_TAG, "Error closing stream", e);
-                        }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(LOG_TAG, "Error closing stream", e);
                     }
                 }
+            }
 
             return data;
 
@@ -245,11 +268,10 @@ public class ForecastFragment extends Fragment {
     }
 
 
-
     /* The date/time conversion code is going to be moved outside the asynctask later,
  * so for convenience we're breaking it out into its own method now.
  */
-    private String getReadableDateString(long time){
+    private String getReadableDateString(long time) {
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
         SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
@@ -264,17 +286,15 @@ public class ForecastFragment extends Fragment {
         long roundedHigh;
         long roundedLow;
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String tempUnit = sharedPreferences.getString(getString(R.string.pref_temp_key),"metric");
+        String tempUnit = mSharedPreferences.getString(getString(R.string.pref_temp_key), "metric");
 
         Resources res = getResources();
         String[] units = res.getStringArray(R.array.pref_temp_values);
 
-        if(tempUnit.equalsIgnoreCase(units[1])){
-            roundedHigh = Math.round( ((9/5)*high) + 32);
-            roundedLow = Math.round( ((9/5)*low) + 32);
-        }
-        else{
+        if (tempUnit.equalsIgnoreCase(units[1])) {
+            roundedHigh = Math.round(((9 / 5) * high) + 32);
+            roundedLow = Math.round(((9 / 5) * low) + 32);
+        } else {
             roundedHigh = Math.round(high);
             roundedLow = Math.round(low);
         }
@@ -286,7 +306,7 @@ public class ForecastFragment extends Fragment {
     /**
      * Take the String representing the complete forecast in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
-     *
+     * <p>
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
@@ -322,7 +342,7 @@ public class ForecastFragment extends Fragment {
         dayTime = new Time();
 
         String[] resultStrs = new String[numDays];
-        for(int i = 0; i < weatherArray.length(); i++) {
+        for (int i = 0; i < weatherArray.length(); i++) {
             // For now, using the format "Day, description, hi/low"
             String day;
             String description;
@@ -336,7 +356,7 @@ public class ForecastFragment extends Fragment {
             // "this saturday".
             long dateTime;
             // Cheating to convert this to UTC time, which is what we want anyhow
-            dateTime = dayTime.setJulianDay(julianStartDay+i);
+            dateTime = dayTime.setJulianDay(julianStartDay + i);
             day = getReadableDateString(dateTime);
 
             // description is in a child array called "weather", which is 1 element long.
