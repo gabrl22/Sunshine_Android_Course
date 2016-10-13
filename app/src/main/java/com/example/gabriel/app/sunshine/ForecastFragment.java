@@ -52,7 +52,6 @@ public class ForecastFragment extends Fragment {
     public ForecastFragment() {
         // Required empty public constructor
     }
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,14 +59,11 @@ public class ForecastFragment extends Fragment {
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         getLocationFromPreferences();
     }
-
-
     @Override
     public void onStart() {
         super.onStart();
         updateWeatherData();
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -75,7 +71,6 @@ public class ForecastFragment extends Fragment {
         View rootview = inflater.inflate(R.layout.fragment_main, container, false);
 
         ListView listView = (ListView) rootview.findViewById(R.id.listview);
-
 
         adapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, new ArrayList<String>());
         listView.setAdapter(adapter);
@@ -90,27 +85,15 @@ public class ForecastFragment extends Fragment {
                 startActivity(intent);
             }
         });
-
-
         return rootview;
     }
-
     private void getLocationFromPreferences() {
         location = mSharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
     }
-
     private void updateWeatherData() {
         getLocationFromPreferences();
         new FetchWeatherTask().execute(location);
     }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.foreacastfragment, menu);
-    }
-
     private void openPreferredLocation() {
         //Se construye la URI para pasarlo al intent
         String location = mSharedPreferences.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_key));
@@ -126,7 +109,12 @@ public class ForecastFragment extends Fragment {
             Toast.makeText(getActivity(), "There's no app to open the map", Toast.LENGTH_SHORT).show();
         }
     }
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.foreacastfragment, menu);
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -140,14 +128,14 @@ public class ForecastFragment extends Fragment {
                 return true;
             case R.id.open_map:
                 openPreferredLocation();
-
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
+
+
+    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
         private final String POSTAL_CODE_PARAM = "q";
         private final String APPID_PARAMS = "APPID";
@@ -266,9 +254,6 @@ public class ForecastFragment extends Fragment {
     }
 
 
-    /* The date/time conversion code is going to be moved outside the asynctask later,
- * so for convenience we're breaking it out into its own method now.
- */
     private String getReadableDateString(long time) {
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
