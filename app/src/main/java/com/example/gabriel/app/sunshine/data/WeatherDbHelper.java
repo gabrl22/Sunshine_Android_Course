@@ -18,6 +18,7 @@ package com.example.gabriel.app.sunshine.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  * Manages a local database for weather data.
@@ -65,6 +66,8 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 // per location, it's created a UNIQUE constraint with REPLACE strategy
                 " UNIQUE (" + WeatherContract.WeatherEntry.COLUMN_DATE + ", " +
                 WeatherContract.WeatherEntry.COLUMN_LOC_KEY + ") ON CONFLICT REPLACE);";
+        Log.v(WeatherDbHelper.class.getSimpleName(), SQL_CREATE_WEATHER_TABLE);
+
 
         sqLiteDatabase.execSQL(SQL_CREATE_WEATHER_TABLE);
 
@@ -75,7 +78,7 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 WeatherContract.LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
                 WeatherContract.LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL " +
                 " );";
-
+        Log.v(WeatherDbHelper.class.getSimpleName(), SQL_CREATE_LOCATION_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_LOCATION_TABLE);
     }
 
