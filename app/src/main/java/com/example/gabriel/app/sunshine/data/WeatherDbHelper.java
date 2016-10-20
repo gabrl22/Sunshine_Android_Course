@@ -67,12 +67,16 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 WeatherContract.WeatherEntry.COLUMN_LOC_KEY + ") ON CONFLICT REPLACE);";
 
         sqLiteDatabase.execSQL(SQL_CREATE_WEATHER_TABLE);
-        final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE " + WeatherContract.LocationEntry.TABLE_NAME +
-                " (" + WeatherContract.LocationEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                WeatherContract.LocationEntry.COLUMN_CITY_NAME + " TEXT NOT NULL," +
-                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + ""
-                ;
-        //TODO: Finish statements to create the location database
+
+        final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE " + WeatherContract.LocationEntry.TABLE_NAME + " (" +
+                WeatherContract.LocationEntry._ID + " INTEGER PRIMARY KEY," +
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " TEXT UNIQUE NOT NULL, " +
+                WeatherContract.LocationEntry.COLUMN_CITY_NAME + " TEXT NOT NULL, " +
+                WeatherContract.LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
+                WeatherContract.LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL " +
+                " );";
+
+        sqLiteDatabase.execSQL(SQL_CREATE_LOCATION_TABLE);
     }
 
     @Override
